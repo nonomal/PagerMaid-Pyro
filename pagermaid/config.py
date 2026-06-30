@@ -7,7 +7,9 @@ from typing import Dict
 
 from yaml import load, FullLoader, safe_load
 
-CONFIG_PATH = Path("data/config.yml")
+DATA_PATH = Path("data")
+DATA_PATH.mkdir(exist_ok=True)
+CONFIG_PATH = DATA_PATH / "config.yml"
 
 
 def strtobool(val, default=False):

@@ -15,28 +15,32 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 )
 from pyrogram.handlers import MessageHandler, EditedMessageHandler
 
-from pagermaid import help_messages, logs, Config, bot, read_context, all_permissions
 from pagermaid.common.ignore import ignore_groups_manager
+from pagermaid.config import Config
+from pagermaid.enums import Message
 from pagermaid.enums.command import CommandHandler, CommandHandlerDecorator
 from pagermaid.group_manager import Permission
-from pagermaid.single_utils import (
-    Message,
-    AlreadyInConversationError,
-    TimeoutConversationError,
-    ListenerCanceled,
-)
+from pagermaid.hook import HookRunner
+from pagermaid.services import bot
+from pagermaid.static import help_messages, read_context, all_permissions
 from pagermaid.utils import (
     lang,
-    attach_report,
-    sudo_filter,
     alias_command,
+    logs,
+)
+from pagermaid.utils.bot_utils import attach_report
+from pagermaid.utils.listener import (
+    sudo_filter,
     get_permission_name,
-    process_exit,
     format_exc as format_exc_text,
 )
-from pagermaid.hook import Hook
 from pagermaid.web import web
 from pyromod.utils import mod_filters
+from pyromod.utils.errors import (
+    AlreadyInConversationError,
+    ListenerCanceled,
+    TimeoutConversationError,
+)
 
 _lock = asyncio.Lock()
 
@@ -75,7 +79,7 @@ def listener(**args) -> CommandHandlerDecorator:
         if parent_command is None and command in help_messages:
             if help_messages[alias_command(command)]["priority"] <= priority:
                 raise ValueError(
-                    f"{lang('error_prefix')} {lang('command')} \"{command}\" {lang('has_reg')}"
+                    f'{lang("error_prefix")} {lang("command")} "{command}" {lang("has_reg")}'
                 )
             else:
                 block_process = True
@@ -147,9 +151,11 @@ def listener(**args) -> CommandHandlerDecorator:
     def decorator(function) -> CommandHandler:
         func = CommandHandler(
             function,
-            alias_command(command, disallow_alias)
-            if command and parent_command is None
-            else None,
+            (
+                alias_command(command, disallow_alias)
+                if command and parent_command is None
+                else None
+            ),
         )
 
         async def handler(client: Client, message: Message):
@@ -182,14 +188,14 @@ def listener(**args) -> CommandHandlerDecorator:
                     read_context[(message.chat.id, message.id)] = True
 
                 if command:
-                    await Hook.command_pre(
+                    await HookRunner.command_pre(
                         message,
                         parent_command or command,
                         command if parent_command else None,
                     )
                 await func.handler(client, message)
                 if command:
-                    await Hook.command_post(
+                    await HookRunner.command_post(
                         message,
                         parent_command or command,
                         command if parent_command else None,
@@ -228,19 +234,18 @@ def listener(**args) -> CommandHandlerDecorator:
                     raise StopPropagation from e
                 raise ContinuePropagation from e
             except SystemExit:
-                await process_exit(start=False, _client=client, message=message)
-                await Hook.shutdown()
+                await HookRunner.shutdown(message)
                 web.stop()
             except BaseException as exc:
                 exc_info = sys.exc_info()[1]
                 exc_format = format_exc()
                 with contextlib.suppress(BaseException):
                     exc_text = format_exc_text(exc)
-                    text = f'{lang("run_error")}\n\n{exc_text}'
+                    text = f"{lang('run_error')}\n\n{exc_text}"
                     await message.edit(text, no_reply=True)  # noqa
                 if not diagnostics:
                     return
-                report = f"""# Generated: {strftime('%H:%M %d/%m/%Y', gmtime())}. \n# ChatID: {message.chat.id}. \n# UserID: {message.from_user.id if message.from_user else message.sender_chat.id}. \n# Message: \n-----BEGIN TARGET MESSAGE-----\n{message.text or message.caption}\n-----END TARGET MESSAGE-----\n# Traceback: \n-----BEGIN TRACEBACK-----\n{str(exc_format)}\n-----END TRACEBACK-----\n# Error: "{str(exc_info)}". \n"""
+                report = f"""# Generated: {strftime("%H:%M %d/%m/%Y", gmtime())}. \n# ChatID: {message.chat.id}. \n# UserID: {message.from_user.id if message.from_user else message.sender_chat.id}. \n# Message: \n-----BEGIN TARGET MESSAGE-----\n{message.content}\n-----END TARGET MESSAGE-----\n# Traceback: \n-----BEGIN TRACEBACK-----\n{str(exc_format)}\n-----END TRACEBACK-----\n# Error: "{str(exc_info)}". \n"""
 
                 logs.error(report)
                 if Config.ERROR_REPORT:
@@ -250,9 +255,12 @@ def listener(**args) -> CommandHandlerDecorator:
                         None,
                         "PGP Error report generated.",
                     )
-                await Hook.process_error_exec(message, command, exc_info, exc_format)
-            if (message.chat.id, message.id) in read_context:
-                del read_context[(message.chat.id, message.id)]
+                await HookRunner.process_error_exec(
+                    message, command, exc_info, exc_format
+                )
+            finally:
+                if (message.chat.id, message.id) in read_context:
+                    del read_context[(message.chat.id, message.id)]
             if block_process or (parent_command and not allow_parent):
                 message.stop_propagation()
             message.continue_propagation()
@@ -345,8 +353,7 @@ def raw_listener(filter_s):
                 with contextlib.suppress(BaseException):
                     await message.edit(lang("reload_des"))
             except SystemExit:
-                await process_exit(start=False, _client=client, message=message)
-                await Hook.shutdown()
+                await HookRunner.shutdown(message)
                 sys.exit(0)
             except (
                 UserNotParticipant,
@@ -367,7 +374,7 @@ def raw_listener(filter_s):
                         f"# ChatID: {message.chat.id}. \n"
                         f"# UserID: {message.from_user.id if message.from_user else message.sender_chat.id}. \n"
                         f"# Message: \n-----BEGIN TARGET MESSAGE-----\n"
-                        f"{message.text}\n-----END TARGET MESSAGE-----\n"
+                        f"{message.content}\n-----END TARGET MESSAGE-----\n"
                         f"# Traceback: \n-----BEGIN TRACEBACK-----\n"
                         f"{str(exc_format)}\n-----END TRACEBACK-----\n"
                         f'# Error: "{str(exc_info)}". \n'

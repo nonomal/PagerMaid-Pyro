@@ -1,5 +1,6 @@
 import contextlib
 import json
+import math
 import os
 from pathlib import Path
 from typing import Optional, List, Tuple, Dict
@@ -7,11 +8,12 @@ from typing import Optional, List, Tuple, Dict
 from pydantic import BaseModel, ValidationError
 
 import pagermaid.modules
-from pagermaid import Config, logs
-from pagermaid.enums import Message
 from pagermaid.common.cache import cache
-from pagermaid.utils import client
+from pagermaid.config import Config
+from pagermaid.dependence import client
+from pagermaid.enums import Message
 from pagermaid.services import sqlite
+from pagermaid.utils import logs
 
 plugins_path = Path("plugins")
 
@@ -258,7 +260,7 @@ class PluginManager:
 
     def plugin_need_update(self, name: str) -> bool:
         if local_version := self.get_local_version(name):
-            if local_version == 0.0:
+            if math.isclose(local_version, 0.0):
                 return False
             if remote_version := self.remote_version_map.get(name):
                 return local_version < remote_version

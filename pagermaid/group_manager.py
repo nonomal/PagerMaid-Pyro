@@ -1,11 +1,14 @@
-import casbin
 from logging import CRITICAL
-from shutil import copyfile
 from os import path as os_path
-from re import findall
 from os import sep
+from re import findall
+from shutil import copyfile
 from typing import List
-from pagermaid import all_permissions, module_dir
+
+import casbin
+
+from pagermaid import module_dir
+from pagermaid.static import all_permissions
 
 # init permissions
 if not os_path.exists(f"data{os_path.sep}gm_policy.csv"):
@@ -97,4 +100,17 @@ def remove_permission_for_user(user: str, permission: Permission):
     data = parse_pen(permission) if "*" in permission.name else [permission]
     for i in data:
         permissions.delete_permission_for_user(user, i.name, permission.act, "allow")
+    permissions.save_policy()
+
+
+def rename_group(old_group: str, new_group: str):
+    users = permissions.get_users_for_role(old_group)
+    for user in users:
+        permissions.add_role_for_user(user, new_group)
+        permissions.delete_role_for_user(user, old_group)
+
+    old_policies = permissions.get_filtered_policy(0, old_group)
+    for policy in old_policies:
+        permissions.add_policy(new_group, policy[1], policy[2], policy[3])
+        permissions.remove_policy(old_group, policy[1], policy[2], policy[3])
     permissions.save_policy()

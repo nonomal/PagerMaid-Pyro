@@ -7,6 +7,11 @@ PhoneNumberInvalidError: Oops ~ The phone number entered is invalid. Please make
 module: module
 error: loading error
 start: PagerMaid-Pyro have started, type ,help in any chat for help message.
+telegram_auth_key_invalid: Telegram authorization key is invalid, removing session.
+telegram_connecting: Connecting to Telegram...
+telegram_connection_failed: Telegram connection failed
+telegram_disconnected: Disconnected
+telegram_retrying: Retrying in
 #utils
 msg_ValueError: Oops ~ No messages were successfully obtained!
 isinstance: Oops ~ Length must be an integer!
@@ -320,10 +325,12 @@ apt_not_exist: Something went wrong ~ The specified plug-in does not exist.
 apt_no_running_plugins: There are no running plugins.
 apt_no_load_failed_plugins: No failed plugins loaded
 apt_no_disabled_plugins: Plugins that are not disabled
-apt_plugin_list: plug-in list
+apt_plugin_list: Plug-in list
+apt_plugin_list_des: "Use `-apt list <page>` to view a specific page."
 apt_plugin_running: running
 apt_plugin_disabled: disabled
 apt_plugin_failed: failed to load
+apt_plugin_not_installed: not installed
 apt_enable: enabled
 apt_disable: disabled
 apt_uploading: uploading plugin...
@@ -373,8 +380,9 @@ del_BadRequestError: Something went wrong, woooo~ I don
 spn_deleted: deleted
 #status
 ## sysinfo
-sysinfo_des: Retrieve system information through neofetch.
+sysinfo_des: Retrieve system information through fastfetch (preferred) or neofetch.
 sysinfo_loading: Loading system information...
+sysinfo_not_found: Could not find fastfetch or neofetch, please install one of them.
 ## fortune
 fortune_des: read fortune cookies information.
 fortune_not_exist: Something went wrong, woooo~ There are no fortune cookies on this system
@@ -399,6 +407,9 @@ status_telethon: Telethon version
 status_pyrogram: Pyrogram version
 status_pgm: PagerMaid version
 status_uptime: Uptime
+status_cpu: "CPU Usage"
+status_ram: "RAM Usage"
+status_swap: "SWAP Usage"
 ## stats
 stats_des: View conversation statistics.
 stats_loading: Loading...
@@ -453,6 +464,7 @@ sudo_group_add_user: Add this user to this permission group successfully.
 sudo_group_del_user: Successfully removed this user from this permission group.
 sudo_group_add_per: Successfully added this permission to this permission group.
 sudo_group_del_per: Successfully removed this permission from this permission group.
+sudo_group_rename_per: Successfully renamed this permission group.
 sudo_user_add_per: This permission was added to this user.
 sudo_user_del_per: Successfully removed this permission from this user.
 sudo_list: 'Sudo Administrator List:'

@@ -1,4 +1,6 @@
-FROM ubuntu:latest
+FROM astral/uv:0.11 AS uv
+
+FROM ubuntu:jammy
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=zh_CN.UTF-8 \
     SHELL=/bin/bash \
@@ -7,11 +9,14 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 WORKDIR /pagermaid/workdir
+COPY --from=uv /uv /usr/local/bin/uv
 RUN source ~/.bashrc \
     ## 安装运行环境依赖，自编译建议修改为国内镜像源
 #   && sed -i 's/archive.ubuntu.com/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list \
 #   && sed -i 's/security.ubuntu.com/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list \
 #   && sed -i 's/ports.ubuntu.com/mirrors.bfsu.edu.cn/g' /etc/apt/sources.list \
+    && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
+    && sed -Ei "s@(security|ports|archive).ubuntu.com@mirrors.cloud.tencent.com@g" /etc/apt/sources.list \
     && apt-get update \
     && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
@@ -27,13 +32,13 @@ RUN source ~/.bashrc \
         curl \
         wget \
         neofetch \
-        imagemagick \
         ffmpeg \
         fortune-mod \
         figlet \
         libmagic1 \
         libzbar0 \
         iputils-ping \
+        tzdata \
     ## 安装编译依赖
     && apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -47,7 +52,6 @@ RUN source ~/.bashrc \
         libffi-dev \
         zlib1g-dev \
         tcl8.6-dev \
-        tk8.6-dev \
         libimagequant-dev \
         libraqm-dev \
         libjpeg-dev \
@@ -56,7 +60,6 @@ RUN source ~/.bashrc \
         libfreetype6-dev \
         liblcms2-dev \
         libwebp-dev \
-        python3-tk \
         libharfbuzz-dev \
         libfribidi-dev \
         libxcb1-dev \
@@ -66,9 +69,8 @@ RUN source ~/.bashrc \
     && echo "Asia/Shanghai" > /etc/timezone \
     ## python软链接
     && ln -sf /usr/bin/python3 /usr/bin/python \
-    ## 升级pip
+    ## 配置 pip
 #   && pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
-    && python -m pip install --upgrade pip \
     ## 添加用户
     && echo "pagermaid ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/pagermaid \
     && useradd pagermaid -r -m -d /pagermaid -s /bin/bash \
@@ -76,8 +78,8 @@ RUN source ~/.bashrc \
     ## 克隆仓库
     && git clone -b master https://github.com/TeamPGM/PagerMaid-Pyro.git /pagermaid/workdir \
     && git config --global pull.ff only \
-    ## pip install
-    && pip install -r requirements.txt \
+    ## install Python dependencies
+    && uv pip install --system -r requirements.txt \
     ## 卸载编译依赖，清理安装缓存
     && sudo apt-get purge --auto-remove -y \
         build-essential \
@@ -89,7 +91,6 @@ RUN source ~/.bashrc \
         libffi-dev \
         zlib1g-dev \
         tcl8.6-dev \
-        tk8.6-dev \
         libimagequant-dev \
         libraqm-dev \
         libjpeg-dev \
@@ -98,16 +99,16 @@ RUN source ~/.bashrc \
         libfreetype6-dev \
         liblcms2-dev \
         libwebp-dev \
-        python3-tk \
         libharfbuzz-dev \
         libfribidi-dev \
         libxcb1-dev \
         pkg-config \
     && apt-get clean -y \
     && rm -rf \
-        ## 删除apt和pip的安装缓存
+        ## 删除apt和Python安装缓存
         /tmp/* \
         /var/lib/apt/lists/* \
         /var/tmp/* \
-        ~/.cache
+        ~/.cache \
+    && cp -f /etc/apt/sources.list.bak /etc/apt/sources.list
 ENTRYPOINT ["sh","utils/docker-config.sh"]

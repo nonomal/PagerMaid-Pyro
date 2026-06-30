@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from pagermaid import logs
 from pagermaid.config import Config
+from pagermaid.utils import logs
 from pagermaid.web.api import base_api_router, base_html_router
 from pagermaid.web.pages import admin_app, login_page
 
@@ -35,7 +35,7 @@ class Web:
         self.app: FastAPI = FastAPI()
         self.web_server = None
         self.web_server_task = None
-        self.bot_main_task = None
+        self.shutdown_event: asyncio.Event = asyncio.Event()
 
     def init_web(self):
         self.app.include_router(base_api_router)
@@ -78,10 +78,12 @@ class Web:
 
         self.init_web()
         self.web_server = uvicorn.Server(
-            config=uvicorn.Config(self.app, host=Config.WEB_HOST, port=Config.WEB_PORT)
+            config=uvicorn.Config(
+                self.app, host=Config.WEB_HOST, port=Config.WEB_PORT, log_config=None
+            )
         )
         server_config = self.web_server.config
-        server_config.setup_event_loop()
+        server_config.get_loop_factory()
         if not server_config.loaded:
             server_config.load()
         self.web_server.lifespan = server_config.lifespan_class(server_config)
@@ -100,10 +102,9 @@ class Web:
         self.web_server_task = asyncio.create_task(self.web_server.main_loop())
 
     def stop(self):
+        self.shutdown_event.set()
         if self.web_server_task:
             self.web_server_task.cancel()
-        if self.bot_main_task:
-            self.bot_main_task.cancel()
 
 
 web = Web()

@@ -1,3 +1,5 @@
+import sys
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -6,14 +8,13 @@ from pyrogram.raw.functions.account import InitTakeoutSession
 from pyrogram.raw.functions.updates import GetState
 from starlette.responses import HTMLResponse
 
-from pagermaid import bot, logs
 from pagermaid.common.reload import load_all
-from pagermaid.utils import lang, process_exit
+from pagermaid.services import bot
+from pagermaid.utils import lang, logs
 from pagermaid.web.api import authentication
 from pagermaid.web.html import get_web_login_html
 from pyromod.methods.sign_in_qrcode import authorize_by_qrcode_web
 from pyromod.utils.errors import QRCodeWebCodeError, QRCodeWebNeedPWDError
-import sys
 
 
 class UserModel(BaseModel):
@@ -43,7 +44,6 @@ class WebLogin:
     async def init_bot():
         logs.info(f"{lang('save_id')} {bot.me.first_name}({bot.me.id})")
         await load_all()
-        await process_exit(start=True, _client=bot)
         logs.info(lang("start"))
 
     async def init(self):
@@ -118,6 +118,8 @@ async def web_login_password(user: UserModel):
         return {"status": 3, "msg": f"{type(e)}"}
 
 
-@html_route.get("/web_login", response_class=HTMLResponse)
+@html_route.get(
+    "/web_login", response_class=HTMLResponse, dependencies=[authentication()]
+)
 async def get_web_login():
     return web_login_html

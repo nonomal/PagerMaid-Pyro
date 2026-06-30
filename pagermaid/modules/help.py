@@ -1,15 +1,19 @@
-""" The help module. """
+"""The help module."""
+
 from os import listdir
 
 from pyrogram.enums import ParseMode
+from pyrogram.types import LinkPreviewOptions
 
-from pagermaid import help_messages, Config
 from pagermaid.common.alias import AliasManager
-from pagermaid.config import CONFIG_PATH
-from pagermaid.group_manager import enforce_permission
 from pagermaid.common.reload import reload_all
-from pagermaid.utils import lang, Message, from_self, from_msg_get_sudo_uid
+from pagermaid.config import CONFIG_PATH, Config
+from pagermaid.enums import Message
+from pagermaid.group_manager import enforce_permission
 from pagermaid.listener import listener
+from pagermaid.static import help_messages
+from pagermaid.utils import lang
+from pagermaid.utils.listener import from_self, from_msg_get_sudo_uid
 
 
 @listener(
@@ -110,12 +114,12 @@ async def help_command(message: Message):
                     result += f"`{command}`, "
         await message.edit(
             result[:-2]
-            + f"\n**{lang('help_send')} \",help <{lang('command')}>\" {lang('help_see')}**\n"
+            + f'\n**{lang("help_send")} ",help <{lang("command")}>" {lang("help_see")}**\n'
             f"[{lang('help_source')}](https://t.me/PagerMaid_Modify) "
             f"[{lang('help_plugin')}](https://index.xtaolabs.com/) "
             f"[{lang('help_module')}](https://wiki.xtaolabs.com/)",
             parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
 
 
@@ -146,9 +150,9 @@ async def help_raw_command(message: Message):
             ):
                 result += f"`{command}`, "
         await message.edit(
-            f"""{result[:-2]}\n**{lang('help_send')} ",help <{lang('command')}>" {lang('help_see')}** [{lang('help_source')}](https://t.me/PagerMaid_Modify)""",
+            f"""{result[:-2]}\n**{lang("help_send")} ",help <{lang("command")}>" {lang("help_see")}** [{lang("help_source")}](https://t.me/PagerMaid_Modify)""",
             parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
 
 
@@ -173,8 +177,8 @@ async def lang_change(message: Message):
         await reload_all()
     else:
         await message.edit(
-            f'{lang("lang_current_lang")} {Config.LANGUAGE}\n\n'
-            f'{lang("lang_all_lang")}{"，".join(dir__)}'
+            f"{lang('lang_current_lang')} {Config.LANGUAGE}\n\n"
+            f"{lang('lang_all_lang')}{'，'.join(dir__)}"
         )
 
 

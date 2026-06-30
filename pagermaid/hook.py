@@ -1,11 +1,15 @@
 import asyncio
 import sys
+from typing import TYPE_CHECKING
 
 from pyrogram import StopPropagation
 
-from pagermaid import hook_functions, logs
 from pagermaid.inject import inject
-from pagermaid.single_utils import Message
+from pagermaid.static import hook_functions
+from pagermaid.utils import logs
+
+if TYPE_CHECKING:
+    from pagermaid.enums import Message
 
 
 class Hook:
@@ -82,9 +86,24 @@ class Hook:
         return decorator
 
     @staticmethod
+    def reload_preprocessor():
+        """
+        注册一个插件重载前处理钩子
+        """
+
+        def decorator(function):
+            hook_functions["reload_pre"].add(function)
+            return function
+
+        return decorator
+
+
+class HookRunner:
+    @staticmethod
     async def startup():
         if cors := [
-            startup(**inject(None, startup)) for startup in hook_functions["startup"]
+            startup(**inject(None, startup))  # noqa
+            for startup in hook_functions["startup"]
         ]:  # noqa
             try:
                 await asyncio.gather(*cors)
@@ -92,9 +111,9 @@ class Hook:
                 logs.info(f"[startup]: {type(exception)}: {exception}")
 
     @staticmethod
-    async def shutdown():
+    async def shutdown(message: "Message"):
         if cors := [
-            shutdown(**inject(None, shutdown))
+            shutdown(**inject(message, shutdown))  # noqa
             for shutdown in hook_functions["shutdown"]
         ]:  # noqa
             try:
@@ -103,7 +122,7 @@ class Hook:
                 logs.info(f"[shutdown]: {type(exception)}: {exception}")
 
     @staticmethod
-    async def command_pre(message: Message, command, sub_command):
+    async def command_pre(message: "Message", command, sub_command):
         cors = []
         try:
             for pre in hook_functions["command_pre"]:
@@ -117,16 +136,15 @@ class Hook:
                 cors.append(pre(**data))  # noqa
             if cors:
                 await asyncio.gather(*cors)
-        except SystemExit:
-            await Hook.shutdown()
-            sys.exit(0)
+        except SystemExit as e:
+            raise e
         except StopPropagation as e:
             raise StopPropagation from e
         except Exception as exception:
             logs.info(f"[command_pre]: {type(exception)}: {exception}")
 
     @staticmethod
-    async def command_post(message: Message, command, sub_command):
+    async def command_post(message: "Message", command, sub_command):
         cors = []
         try:
             for post in hook_functions["command_post"]:
@@ -140,9 +158,8 @@ class Hook:
                 cors.append(post(**data))  # noqa
             if cors:
                 await asyncio.gather(*cors)
-        except SystemExit:
-            await Hook.shutdown()
-            sys.exit(0)
+        except SystemExit as e:
+            raise e
         except StopPropagation as e:
             raise StopPropagation from e
         except Exception as exception:
@@ -150,7 +167,7 @@ class Hook:
 
     @staticmethod
     async def process_error_exec(
-        message: Message, command, exc_info: BaseException, exc_format: str
+        message: "Message", command, exc_info: BaseException, exc_format: str
     ):
         cors = []
         try:
@@ -170,7 +187,7 @@ class Hook:
             if cors:
                 await asyncio.gather(*cors)
         except SystemExit:
-            await Hook.shutdown()
+            await HookRunner.shutdown(message)
             sys.exit(0)
         except StopPropagation as e:
             raise StopPropagation from e
@@ -180,10 +197,21 @@ class Hook:
     @staticmethod
     async def load_success_exec():
         if cors := [
-            load(**inject(None, load))
+            load(**inject(None, load))  # noqa
             for load in hook_functions["load_plugins_finished"]
         ]:  # noqa
             try:
                 await asyncio.gather(*cors)
             except Exception as exception:
                 logs.info(f"[load_success_exec]: {type(exception)}: {exception}")
+
+    @staticmethod
+    async def reload_pre_exec():
+        if cors := [
+            reload(**inject(None, reload))  # noqa
+            for reload in hook_functions["reload_pre"]
+        ]:  # noqa
+            try:
+                await asyncio.gather(*cors)
+            except Exception as exception:
+                logs.info(f"[reload_pre_exec]: {type(exception)}: {exception}")

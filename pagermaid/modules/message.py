@@ -1,12 +1,13 @@
-""" Pagermaid message plugin. """
+"""Pagermaid message plugin."""
+
 from pyrogram.enums import ChatType
 from pyrogram.errors import Forbidden, FloodWait
 
-from pagermaid import log
 from pagermaid.config import Config
+from pagermaid.enums import Message
 from pagermaid.listener import listener
 from pagermaid.utils import lang
-from pagermaid.enums import Message
+from pagermaid.utils.bot_utils import log
 
 
 @listener(is_plugin=False, outgoing=True, command="id", description=lang("id_des"))
@@ -27,6 +28,9 @@ async def userid(message: Message):
             text += f"username: @{msg_from.username}" + "\n"
     if msg_from.type in [ChatType.SUPERGROUP, ChatType.CHANNEL]:
         text += f"title: `{msg_from.title}" + "`\n"
+        if message.topic:
+            text += f"topic title: `{message.topic.title}`\n"
+            text += f"topic ID: `{message.topic.id}`\n"
         try:
             if msg_from.username:
                 text += f"username: @{msg_from.username}" + "\n"

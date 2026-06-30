@@ -7,6 +7,11 @@ PhoneNumberInvalidError: 出错了呜呜呜 ~ 输入的电话号码无效。 请
 module: 模块
 error: 加载出错
 start: PagerMaid-Pyro 已启动，在任何聊天中输入 ,help 以获得帮助消息。
+telegram_auth_key_invalid: Telegram 授权密钥无效，正在移除 session。
+telegram_connecting: 正在连接 Telegram...
+telegram_connection_failed: Telegram 连接失败
+telegram_disconnected: 连接已断开
+telegram_retrying: 将在以下秒数后重试
 #utils
 msg_ValueError: 出错了呜呜呜 ~ 没有成功获取到消息！
 isinstance: 出错了呜呜呜 ~ 长度必须是整数!
@@ -321,9 +326,11 @@ apt_no_running_plugins: 没有运行中的插件
 apt_no_load_failed_plugins: 没有加载失败的插件
 apt_no_disabled_plugins: 没有关闭的插件
 apt_plugin_list: 插件列表
+apt_plugin_list_des: "使用 `-apt list <页码>` 跳转指定页。"
 apt_plugin_running: 运行中
 apt_plugin_disabled: 已关闭
 apt_plugin_failed: 加载失败
+apt_plugin_not_installed: 未安装
 apt_enable: 已启用
 apt_disable: 已禁用
 apt_uploading: 上传插件中 . . .
@@ -373,8 +380,9 @@ del_BadRequestError: 出错了呜呜呜 ~ 缺少删除此消息的权限。
 spn_deleted: 删除了
 #status
 ## sysinfo
-sysinfo_des: 通过 neofetch 检索系统信息.
+sysinfo_des: 通过 fastfetch（优先）或 neofetch 检索系统信息。
 sysinfo_loading: 加载系统信息中 . . .
+sysinfo_not_found: 未找到 fastfetch 或 neofetch, 请安装其中一个。
 ## fortune
 fortune_des: 读取 fortune cookies 信息。
 fortune_not_exist: 出错了呜呜呜 ~ 此系统上没有 fortune cookies
@@ -399,6 +407,9 @@ status_telethon: Telethon 版本
 status_pyrogram: Pyrogram 版本
 status_pgm: PagerMaid 版本
 status_uptime: 运行时间
+status_cpu: "CPU 使用率"
+status_ram: "内存 使用率"
+status_swap: "SWAP 使用率"
 ## stats
 stats_des: 查看我的对话统计信息。
 stats_loading: 加载中 . . .
@@ -453,6 +464,7 @@ sudo_group_add_user: 添加此用户到此权限组成功
 sudo_group_del_user: 从此权限组删除此用户成功
 sudo_group_add_per: 从此权限组中添加此权限成功
 sudo_group_del_per: 从此权限组中移除此权限成功
+sudo_group_rename_per: 重命名此权限组成功
 sudo_user_add_per: 从此用户中添加此权限成功
 sudo_user_del_per: 从此用户中移除此权限成功
 sudo_list: 'Sudo 管理员列表：'

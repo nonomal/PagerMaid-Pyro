@@ -1,11 +1,13 @@
-""" This module handles world clock related utility. """
+"""This module handles world clock related utility."""
 
 from datetime import datetime
 
 from pytz import country_names, country_timezones, timezone
+
 from pagermaid.config import Config
+from pagermaid.enums import Message
 from pagermaid.listener import listener
-from pagermaid.utils import lang, Message
+from pagermaid.utils import lang
 
 
 @listener(

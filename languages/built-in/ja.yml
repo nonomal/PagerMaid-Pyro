@@ -7,6 +7,11 @@ PhoneNumberInvalidError: Oops ~ The phone number entered is invalid. Please make
 module: モジュール管理
 error: loading error
 start: PagerMaid-Pyro have started, type ,help in any chat for help message.
+telegram_auth_key_invalid: Telegram の認証キーが無効です。session を削除します。
+telegram_connecting: Telegram に接続しています...
+telegram_connection_failed: Telegram への接続に失敗しました
+telegram_disconnected: 接続が切断されました
+telegram_retrying: 次の秒数後に再試行します
 #utils
 msg_ValueError: Oops ~ No messages were successfully obtained!
 isinstance: Oops ~ Length must be an integer!
@@ -320,10 +325,12 @@ apt_not_exist: Something went wrong - The specified plug-in does not exist.
 apt_no_running_plugins: There are no running plugins.
 apt_no_load_failed_plugins: No failed plugins loaded
 apt_no_disabled_plugins: Plugins that are not disabled
-apt_plugin_list: plug-in list
+apt_plugin_list: Plug-in list
+apt_plugin_list_des: "`-apt list <ページ番号>` を使用して指定ページへ移動します。"
 apt_plugin_running: running
 apt_plugin_disabled: disabled
 apt_plugin_failed: failed to load
+apt_plugin_not_installed: 未インストール
 apt_enable: enabled
 apt_disable: disabled
 apt_uploading: uploading plugin...
@@ -375,6 +382,7 @@ spn_deleted: deleted
 ## sysinfo
 sysinfo_des: Retrieve system through neofetch.
 sysinfo_loading: Loading system information...
+sysinfo_not_found: fastfetch または neofetch が見つかりませんでした。いずれかをインストールしてください。
 ## fortune
 fortune_des: read fortune クッキーのフォーマットです。
 fortune_not_exist: Something went wrong, woo~ There are no fortune Cookieies on this system
@@ -398,7 +406,10 @@ status_python: Python version
 status_telethon: Telethon version
 status_pyrogram: Pyrogram version
 status_pgm: PagerMaid version
-status_uptime: Utime
+status_uptime: Uptime
+status_cpu: "CPU 使用率"
+status_ram: "RAM 使用率"
+status_swap: "SWAP 使用率"
 ## stats
 stats_des: Viewconversation statistics.
 stats_loading: ロードリング...
@@ -453,6 +464,7 @@ sudo_group_add_user: Add this user to this permission group successfully.
 sudo_group_del_user: Successfully removed this user from this permission group.
 sudo_group_add_per: 一つのグループSuccessfully added this perission to this permission - グループ。
 sudo_group_del_per: Successfully removed this perission from this permission グループ。
+sudo_group_rename_per: Successfully renamed this permission グループ。
 sudo_user_add_per: This permissionwas added to this
 sudo_user_del_per: Successfully removed this perission from this user.
 sudo_list: 'Sudo Administrator List:'
